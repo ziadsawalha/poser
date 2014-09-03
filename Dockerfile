@@ -10,4 +10,4 @@ FROM scratch
 
 ADD bin/poser /poser
 
-CMD ["/poser"]
+ENTRYPOINT ["/poser"]
