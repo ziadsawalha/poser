@@ -3,40 +3,41 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"github.com/go-martini/martini"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"reflect"
+
+	"github.com/go-martini/martini"
 )
 
-type Status struct {
+type status struct {
 	Message string
 	Code    int `json:",float64"`
 }
 
-type Request struct {
+type request struct {
 	URI     string
 	Method  string
 	Headers map[string][]string
 	Body    string
 }
 
-type Response struct {
+type response struct {
 	Headers map[string][]string
-	Status  Status
+	Status  status
 	Body    map[string]interface{}
 }
 
-type Scene struct {
-	Request  Request
-	Response Response
+type scene struct {
+	Request  request
+	Response response
 }
 
-type Scenes struct {
+type scenes struct {
 	Version      float64
-	Interactions []Scene
+	Interactions []scene
 }
 
 func contains(theSlice []string, theValue string) bool {
@@ -51,7 +52,7 @@ func contains(theSlice []string, theValue string) bool {
 	return false
 }
 
-func slices_match(slice1 []string, slice2 []string) bool {
+func slicesMatch(slice1 []string, slice2 []string) bool {
 	// Make sure the header values match
 	for _, value := range slice1 {
 		if !(contains(slice2, value)) {
@@ -61,23 +62,23 @@ func slices_match(slice1 []string, slice2 []string) bool {
 	return true
 }
 
-func headers_match(expected map[string][]string, actual http.Header) bool {
+func headersMatch(expected map[string][]string, actual http.Header) bool {
 	log.Printf("expected: %s\nactual: %s", expected, actual)
 
 	// Check to see if everything in expected exists in actual
 	for key, value := range expected {
 		log.Printf("Testing key %s, value %s", key, value)
-		if !(slices_match(value, actual[key])) {
+		if !(slicesMatch(value, actual[key])) {
 			return false
 		}
 	}
 	return true
 }
 
-func queries_match(query1 string, query2 string) bool {
-	parsed_query1, _ := url.ParseQuery(query1)
-	parsed_query2, _ := url.ParseQuery(query2)
-	return reflect.DeepEqual(parsed_query1, parsed_query2)
+func queriesMatch(query1 string, query2 string) bool {
+	parsedQuery1, _ := url.ParseQuery(query1)
+	parsedQuery2, _ := url.ParseQuery(query2)
+	return reflect.DeepEqual(parsedQuery1, parsedQuery2)
 }
 
 func stringify(theMap map[string]interface{}) string {
@@ -87,16 +88,16 @@ func stringify(theMap map[string]interface{}) string {
 
 func main() {
 	// Command line arguments setup
-	var scenes_file = flag.String("scenes", "scenes.json", "Path to json file defining request/response pairs.")
+	var scenesFile = flag.String("scenes", "scenes.json", "Path to json file defining request/response pairs.")
 	flag.Parse()
 
 	// Try to parse the scenes file
-	file, _ := os.Open(*scenes_file)
+	file, _ := os.Open(*scenesFile)
 	decoder := json.NewDecoder(file)
-	scenes := Scenes{}
-	err := decoder.Decode(&scenes)
+	allScenes := scenes{}
+	err := decoder.Decode(&allScenes)
 	if err != nil {
-		log.Printf("%s is not a valid json scenes file.\n", *scenes_file)
+		log.Printf("%s is not a valid json scenes file.\n", *scenesFile)
 		log.Fatal(err)
 	}
 
@@ -104,17 +105,21 @@ func main() {
 	m := martini.Classic()
 
 	m.Any("/**", func(req *http.Request) (int, string) {
-		for _, scene := range scenes.Interactions {
+		for _, scene := range allScenes.Interactions {
 			sceneURL, _ := url.Parse(scene.Request.URI)
 			if req.Method == scene.Request.Method && req.URL.Path == sceneURL.Path {
 				log.Printf("Matched method %s and URI %s\n", req.Method, req.URL.Path)
 
-				if queries_match(req.URL.RawQuery, sceneURL.RawQuery) && headers_match(scene.Request.Headers, req.Header) {
+				if queriesMatch(req.URL.RawQuery, sceneURL.RawQuery) &&
+					headersMatch(scene.Request.Headers, req.Header) {
+
 					log.Printf("Matched query params %s", req.URL.RawQuery)
 					log.Printf("Matched headers %s", scene.Request.Headers)
 					return scene.Response.Status.Code, stringify(scene.Response.Body)
 
-				} else if reflect.DeepEqual(req.Body, scene.Request.Body) && headers_match(scene.Request.Headers, req.Header) {
+				} else if reflect.DeepEqual(req.Body, scene.Request.Body) &&
+					headersMatch(scene.Request.Headers, req.Header) {
+
 					log.Printf("Matched request body %s", req.Body)
 					log.Printf("Matched headers %s", scene.Request.Headers)
 					return scene.Response.Status.Code, stringify(scene.Response.Body)
