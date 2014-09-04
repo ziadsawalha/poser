@@ -17,16 +17,14 @@ type Status struct {
 }
 
 type Request struct {
-	Uri     string
-	URN     string
-	Query   string
+	URI     string
 	Method  string
-	Headers map[string]interface{}
+	Headers map[string][]string
 	Body    string
 }
 
 type Response struct {
-	Headers map[string]interface{}
+	Headers map[string][]string
 	Status  Status
 	Body    map[string]interface{}
 }
@@ -39,6 +37,41 @@ type Scene struct {
 type Scenes struct {
 	Version      float64
 	Interactions []Scene
+}
+
+func contains(theSlice []string, theValue string) bool {
+	log.Printf("Slice: %s, Value: %s", theSlice, theValue)
+	for _, value := range theSlice {
+		log.Printf("Comparing %s with %s", value, theValue)
+		if value == theValue {
+			return true
+		}
+	}
+	log.Printf("Oops! Header did not match expectations")
+	return false
+}
+
+func slices_match(slice1 []string, slice2 []string) bool {
+	// Make sure the header values match
+	for _, value := range slice1 {
+		if !(contains(slice2, value)) {
+			return false
+		}
+	}
+	return true
+}
+
+func headers_match(expected map[string][]string, actual http.Header) bool {
+	log.Printf("expected: %s\nactual: %s", expected, actual)
+
+	// Check to see if everything in expected exists in actual
+	for key, value := range expected {
+		log.Printf("Testing key %s, value %s", key, value)
+		if !(slices_match(value, actual[key])) {
+			return false
+		}
+	}
+	return true
 }
 
 func queries_match(query1 string, query2 string) bool {
@@ -72,22 +105,24 @@ func main() {
 
 	m.Any("/**", func(req *http.Request) (int, string) {
 		for _, scene := range scenes.Interactions {
-			if req.Method == scene.Request.Method && req.URL.Path == scene.Request.URN {
+			sceneURL, _ := url.Parse(scene.Request.URI)
+			if req.Method == scene.Request.Method && req.URL.Path == sceneURL.Path {
 				log.Printf("Matched method %s and URI %s\n", req.Method, req.URL.Path)
 
-				if queries_match(req.URL.RawQuery, scene.Request.Query) {
+				if queries_match(req.URL.RawQuery, sceneURL.RawQuery) && headers_match(scene.Request.Headers, req.Header) {
 					log.Printf("Matched query params %s", req.URL.RawQuery)
+					log.Printf("Matched headers %s", scene.Request.Headers)
 					return scene.Response.Status.Code, stringify(scene.Response.Body)
 
-				} else if reflect.DeepEqual(req.Body, scene.Request.Body) {
+				} else if reflect.DeepEqual(req.Body, scene.Request.Body) && headers_match(scene.Request.Headers, req.Header) {
 					log.Printf("Matched request body %s", req.Body)
+					log.Printf("Matched headers %s", scene.Request.Headers)
 					return scene.Response.Status.Code, stringify(scene.Response.Body)
 				}
 			}
 		}
 
-		// TODO(pablo): I'm not validating against the request header yet.
-		// TODO(pablo): I'm not using the response header. Should I be?
+		// TODO(pablo): Not using a scene's provided response header... yet.
 
 		return 501, "ERROR: Your request did not match any scenes."
 	})

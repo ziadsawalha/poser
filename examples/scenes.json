@@ -5,25 +5,13 @@
       "request": {
         "body": "{\"auth\": {\"domain\": {\"name\": \"somedomain\"}, \"rsaCredentials\": {\"username\": \"pablo\", \"tokenKey\": \"1234567890\"}}}",
         "headers": {
-          "Content-Length": [
-            "135"
-          ],
-          "Content-Type": [
-            "application/json"
-          ],
-          "Accept-Encoding": [
-            "gzip, deflate"
-          ],
-          "Accept": [
-            "application/json"
-          ],
-          "User-Agent": [
-            "python-requests/2.3.0 CPython/2.7.5 Darwin/13.3.0"
-          ]
+          "Content-Length": ["129"],
+          "Content-Type": ["application/json"],
+          "Accept-Encoding": ["gzip,deflate"],
+          "Accept": ["application/json"]
         },
         "method": "POST",
-        "uri": "https://somedomain.com:443/v2.0/tokens",
-        "urn": "/v2.0/tokens"
+        "uri": "https://somedomain.com:443/v2.0/tokens"
       },
       "response": {
         "body": {
@@ -53,33 +41,15 @@
           }
         },
         "headers": {
-          "content-length": [
-            "999"
-          ],
-          "content-encoding": [
-            "gzip"
-          ],
-          "vary": [
-            "Accept, Accept-Encoding, X-Auth-Token"
-          ],
-          "connection": [
-            "keep-alive"
-          ],
-          "server": [
-            "nginx"
-          ],
-          "x-newrelic-app-data": [
-            "some_uuid"
-          ],
-          "front-end-https": [
-            "on"
-          ],
-          "date": [
-            "Wed, 03 Sep 2014 18:43:53 GMT"
-          ],
-          "content-type": [
-            "application/json"
-          ]
+          "content-length": ["999"],
+          "content-encoding": ["gzip"],
+          "vary": ["Accept, Accept-Encoding, X-Auth-Token"],
+          "connection": ["keep-alive"],
+          "server": ["nginx"],
+          "x-newrelic-app-data": ["some_uuid"],
+          "front-end-https": ["on"],
+          "date": ["Wed, 03 Sep 2014 18:43:53 GMT"],
+          "content-type": ["application/json"]
         },
         "status": {
           "message": "OK",
@@ -91,23 +61,12 @@
       "request": {
         "body": null,
         "headers": {
-          "User-Agent": [
-            "python-requests/2.3.0 CPython/2.7.5 Darwin/13.3.0"
-          ],
-          "Accept-Encoding": [
-            "gzip, deflate"
-          ],
-          "Accept": [
-            "application/json"
-          ],
-          "X-Auth-Token": [
-            "12345678"
-          ]
+          "Accept-Encoding": ["gzip,deflate,sdch"],
+          "Accept": ["application/json"],
+          "X-Auth-Token": ["12345678"]
         },
         "method": "GET",
-        "uri": "https://somedomain.com:443/some-device-id?foo=bar&blat=blearg",
-        "urn": "/some-device-id",
-        "query": "foo=bar&blat=blearg"
+        "uri": "https://somedomain.com:443/some-device-id?foo=bar&blat=blearg"
       },
       "response": {
         "body": {
@@ -121,18 +80,10 @@
           "device": "some-device-id"
         },
         "headers": {
-          "date": [
-            "Wed, 03 Sep 2014 18:56:04 GMT"
-          ],
-          "content-length": [
-            "389"
-          ],
-          "content-type": [
-            "application/json"
-          ],
-          "server": [
-            "Apache/2.2.16 (Debian)"
-          ]
+          "date": ["Wed, 03 Sep 2014 18:56:04 GMT"],
+          "content-length": ["389"],
+          "content-type": ["application/json"],
+          "server": ["Apache/2.2.16 (Debian)"]
         },
         "status": {
           "message": "OK",
