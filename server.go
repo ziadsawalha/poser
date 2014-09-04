@@ -41,6 +41,12 @@ type Scenes struct {
 	Interactions []Scene
 }
 
+func queries_match(query1 string, query2 string) bool {
+	parsed_query1, _ := url.ParseQuery(query1)
+	parsed_query2, _ := url.ParseQuery(query2)
+	return reflect.DeepEqual(parsed_query1, parsed_query2)
+}
+
 func stringify(theMap map[string]interface{}) string {
 	jsonified, _ := json.Marshal(theMap)
 	return string(jsonified)
@@ -63,15 +69,13 @@ func main() {
 
 	// Crank up Poser
 	m := martini.Classic()
+
 	m.Any("/**", func(req *http.Request) (int, string) {
 		for _, scene := range scenes.Interactions {
 			if req.Method == scene.Request.Method && req.URL.Path == scene.Request.URN {
 				log.Printf("Matched method %s and URI %s\n", req.Method, req.URL.Path)
 
-				given_query, _ := url.ParseQuery(req.URL.RawQuery)
-				saved_query, _ := url.ParseQuery(scene.Request.Query)
-
-				if reflect.DeepEqual(given_query, saved_query) {
+				if queries_match(req.URL.RawQuery, scene.Request.Query) {
 					log.Printf("Matched query params %s", req.URL.RawQuery)
 					return scene.Response.Status.Code, stringify(scene.Response.Body)
 
