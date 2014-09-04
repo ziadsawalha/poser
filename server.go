@@ -82,6 +82,7 @@ func main() {
 			}
 		}
 
+		// TODO(pablo): I'm not validating against the request header yet.
 		// TODO(pablo): I'm not using the response header. Should I be?
 
 		return 501, "ERROR: Your request did not match any scenes."
