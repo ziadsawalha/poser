@@ -14,14 +14,27 @@ Poser is written in Go so it's pretty snappy. And the Docker container is tiny (
 ### Installing Poser
 
   * Using Go:
-    * Make sure you have [go](http://golang.org/) installed (for Mac users I strongly recommend HomeBrew: just `brew install go`)
+    * Make sure you have [go](http://golang.org/) installed (for Mac users I strongly recommend HomeBrew: just `brew install go` or `port install go` if you use macports)
     * In a directory of your choice, run `go get github.com/pablosan/poser`
-    * Then run `$GOPATH/bin/poser -scenes path/to/your/scenes.json`
+    * Then run `$GOPATH/bin/poser -scenes path/to/your/hello.yaml`
   * Using one of the pre-compiled binaries:
     * `git clone git@github.com:pablosan/poser.git`
     * `cd poser`
-    * `./bin/[linux|macosx]/poser -scenes path/to/your/scenes.json`
+    * `./bin/[linux|macosx]/poser -scenes path/to/your/hello.yaml`
   * Using Docker
-    * `docker run -d -p 8080:3000 -v /path/to/your/scenes.json:/var/scenes.json --name poser pablosan/poser -scene /var/scenes.json`
+    * `docker run -d -p 8080:3000 -v /path/to/your/hello.yaml:/var/scenes.json --name poser pablosan/poser -scene /var/scenes.json`
+
+  Then make a call to poser:
+
+    ```
+    $ curl http://localhost:3000/hello -i
+    host:3000/hello -i
+    HTTP/1.1 200 OK
+    Date: Fri, 05 Sep 2014 03:58:32 GMT
+    Content-Length: 26
+    Content-Type: text/plain; charset=utf-8
+
+    {"message":"Hello World!"}
+    ```
 
 If you're wondering what goes in the scenes file, check out the [examples](examples). _NOTE: yaml support has not been added yet. Only json is currently supported._

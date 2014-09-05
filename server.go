@@ -3,13 +3,16 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"reflect"
+	"strings"
 
 	"github.com/go-martini/martini"
+	"gopkg.in/yaml.v1"
 )
 
 type status struct {
@@ -88,17 +91,29 @@ func stringify(theMap map[string]interface{}) string {
 
 func main() {
 	// Command line arguments setup
-	var scenesFile = flag.String("scenes", "scenes.json", "Path to json file defining request/response pairs.")
+	var scenesFile = flag.String("scenes", "scenes.json", "Path to json or yaml file defining request/response pairs.")
 	flag.Parse()
 
 	// Try to parse the scenes file
-	file, _ := os.Open(*scenesFile)
-	decoder := json.NewDecoder(file)
 	allScenes := scenes{}
-	err := decoder.Decode(&allScenes)
-	if err != nil {
-		log.Printf("%s is not a valid json scenes file.\n", *scenesFile)
-		log.Fatal(err)
+	if strings.HasSuffix(*scenesFile, ".json") {
+		file, _ := os.Open(*scenesFile)
+		decoder := json.NewDecoder(file)
+		err := decoder.Decode(&allScenes)
+		if err != nil {
+			log.Printf("%s is not a valid json scenes file.\n", *scenesFile)
+			log.Fatal(err)
+		}
+	} else if strings.HasSuffix(*scenesFile, ".yaml") {
+		file, _ := ioutil.ReadFile(*scenesFile)
+		err := yaml.Unmarshal(file, &allScenes)
+		if err != nil {
+			log.Printf("%s is not a valid yaml scenes file.\n", *scenesFile)
+			log.Fatal(err)
+	    }
+	} else {
+		log.Printf("%s does not end in '.json' or '.yaml'.\n", *scenesFile)
+		log.Fatal(1)
 	}
 
 	// Crank up Poser
