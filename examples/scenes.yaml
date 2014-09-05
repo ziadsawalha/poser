@@ -1,66 +1,66 @@
 version: 1
 interactions:
-- request:
-    body: '{"auth": {"domain": {"name": "somedomain"}, "rsaCredentials":
-      {"username": "pablo", "tokenKey": "1234567890"}}}'
-    headers:
-      Accept: [application/json]
-      Accept-Encoding: ['gzip, deflate']
-      Content-Length: ['135']
-      Content-Type: [application/json]
-      User-Agent: [python-requests/2.3.0 CPython/2.7.5 Darwin/13.3.0]
-    method: POST
-    uri: https://somedomain.com:443/v2.0/tokens
-  response:
-    body:
-      access:
-        token:
-          authenticatedBy:
-            - "RSAKEY"
-          expires: "2014-09-04T05:44:04.877Z"
-          id: "12345678"
-        serviceCatalog: []
-        user:
-          defaultRegion: ""
-          id: "pablo"
-          roles:
-            - id: "9"
-              name: "authorizeduser"
-              description: "Defines a generic authorized user"
-            - name: "authed_user"
-    headers:
-      connection: [keep-alive]
-      content-encoding: [gzip]
-      content-length: ['999']
-      content-type: [application/json]
-      date: ['Wed, 03 Sep 2014 18:43:53 GMT']
-      front-end-https: ['on']
-      server: [nginx]
-      vary: ['Accept, Accept-Encoding, X-Auth-Token']
-      x-newrelic-app-data: [some_uuid]
-    status: {code: 200, message: OK}
-- request:
-    body: null
-    headers:
-      Accept: [application/json]
-      Accept-Encoding: ['gzip, deflate']
-      User-Agent: [python-requests/2.3.0 CPython/2.7.5 Darwin/13.3.0]
-      X-Auth-Token:  ['12345678']
-    method: GET
-    uri: https://somedomain.com:443/some-device-id
-  response:
-    body:
-      account: "some-account"
-      account_type: "some-account-type"
-      ip: "10.69.245.162"
-      region: "some-region"
-      account_url: "https://somedomain.com/path/to/account"
-      source: "somesource"
-      device_url: "https://somedomain.com/path/to/device?someparam=somevalue"
-      device: "some-device-id"
-    headers:
-      content-length: ['389']
-      content-type: [application/json]
-      date: ['Wed, 03 Sep 2014 18:56:04 GMT']
-      server: [Apache/2.2.16 (Debian)]
-    status: {code: 200, message: OK}
+  -
+    request:
+      body: "{\"auth\": {\"domain\": {\"name\": \"somedomain\"}, \"rsaCredentials\": {\"username\": \"pablo\", \"tokenKey\": \"1234567890\"}}}"
+      headers:
+        Content-Length:
+          - "111"
+        Content-Type:
+          - "application/json"
+        Accept-Encoding:
+          - "gzip,deflate"
+        Accept:
+          - "application/json"
+      method: "POST"
+      uri: "https://somedomain.com:443/v2.0/tokens"
+    response:
+      body: "{\"access\": {\"token\": {\"expires\": \"2014-09-04T05:44:04.877Z\", \"authenticatedBy\": [\"RSAKEY\"], \"id\": \"12345678\"}, \"serviceCatalog\": [], \"user\": {\"defaultRegion\": \"\", \"id\": \"pablo\", \"roles\": [{\"description\": \"Defines a generic authorized user\", \"name\": \"authorizeduser\", \"id\": \"9\"}, {\"name\": \"authed_user\"}]}}}"
+      headers:
+        content-length:
+          - "999"
+        content-encoding:
+          - "gzip"
+        vary:
+          - "Accept, Accept-Encoding, X-Auth-Token"
+        connection:
+          - "keep-alive"
+        server:
+          - "nginx"
+        x-newrelic-app-data:
+          - "some_uuid"
+        front-end-https:
+          - "on"
+        date:
+          - "Wed, 03 Sep 2014 18:43:53 GMT"
+        content-type:
+          - "application/json"
+      status:
+        message: "OK"
+        code: 200
+  -
+    request:
+      body: null
+      headers:
+        Accept-Encoding:
+          - "gzip,deflate,sdch"
+        Accept:
+          - "application/json"
+        X-Auth-Token:
+          - "12345678"
+      method: "GET"
+      uri: "https://somedomain.com:443/some-device-id?foo=bar&blat=blearg"
+    response:
+      body: "{\"account\": \"some-account\", \"account_type\": \"some-account-type\", \"ip\": \"10.69.245.162\", \"region\": \"some-region\", \"account_url\": \"https://somedomain.com/path/to/account\", \"source\": \"somesource\", \"device_url\": \"https://somedomain.com/path/to/device?someparam=somevalue\", \"device\": \"some-device-id\"}"
+      headers:
+        date:
+          - "Wed, 03 Sep 2014 18:56:04 GMT"
+        content-length:
+          - "389"
+        content-type:
+          - "application/json"
+        server:
+          - "Apache/2.2.16 (Debian)"
+      status:
+        message: "OK"
+        code: 200
