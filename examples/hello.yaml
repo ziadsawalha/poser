@@ -4,8 +4,7 @@ interactions:
     method: GET
     uri: https://somedomain.com:443/hello
   response:
-    body:
-      message: Hello World!
+    body: "{\"message\": \"Hello World!\"}"
     headers:
       content-type: [application/json]
       date: ['Wed, 03 Sep 2014 18:43:53 GMT']
