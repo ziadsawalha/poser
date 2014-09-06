@@ -15,7 +15,8 @@ import (
 	"gopkg.in/yaml.v1"
 )
 
-var version = "v0.0.1" // Poser version
+var version = "v0.0.1"   // Poser version
+var allScenes = scenes{} // Global struct for all scene definitions
 
 type status struct {
 	Message string
@@ -111,7 +112,19 @@ func bodiesMatch(expected string, actual io.ReadCloser) bool {
 	return reflect.DeepEqual(expectedJSON, actualJSON)
 }
 
-func parseScenes(scenesFilename string, allScenes *scenes) {
+func addResponseHeaders(res http.ResponseWriter, headers map[string][]string) {
+	for key, value := range headers {
+		res.Header().Set(key, value[0])
+	}
+}
+
+func writeResponse(res http.ResponseWriter, headers map[string][]string, status int, body string) {
+	addResponseHeaders(res, headers)
+	res.WriteHeader(status)
+	res.Write([]byte(body))
+}
+
+func parseScenes(scenesFilename string) {
 	file, _ := ioutil.ReadFile(scenesFilename)
 	var err error
 
@@ -130,6 +143,34 @@ func parseScenes(scenesFilename string, allScenes *scenes) {
 	}
 }
 
+func handleAny(res http.ResponseWriter, req *http.Request) {
+	for _, scene := range allScenes.Interactions {
+		sceneURL, _ := url.Parse(scene.Request.URI)
+		if req.Method == scene.Request.Method && req.URL.Path == sceneURL.Path &&
+			headersMatch(scene.Request.Headers, req.Header) {
+
+			log.Printf("Matched method %s", scene.Request.Method)
+			log.Printf("Matched URI %s", sceneURL.Path)
+			log.Printf("Matched headers %s", scene.Request.Headers)
+
+			if queriesMatch(req.URL.RawQuery, sceneURL.RawQuery) {
+				log.Printf("Matched query params %s\n", sceneURL.RawQuery)
+				writeResponse(res, scene.Response.Headers, scene.Response.Status.Code,
+					scene.Response.Body)
+				return
+
+			} else if bodiesMatch(scene.Request.Body, req.Body) {
+				log.Printf("Request body matched expected.")
+				writeResponse(res, scene.Response.Headers, scene.Response.Status.Code,
+					scene.Response.Body)
+				return
+			}
+		}
+	}
+	res.WriteHeader(501)
+	res.Write([]byte("ERROR: Your request did not match any scenes."))
+}
+
 func main() {
 	// Command line arguments setup
 	var scenesFilename = flag.String("scenes", "scenes.json",
@@ -138,38 +179,13 @@ func main() {
 		"Port the http server should listen on. Defaults to 3000.")
 
 	flag.Parse()
-	*port = ":" + *port
-	allScenes := scenes{}
-	parseScenes(*scenesFilename, &allScenes)
+	parseScenes(*scenesFilename)
 
 	// Crank up Poser
 	m := martini.Classic()
 
-	m.Any("/**", func(req *http.Request) (int, string) {
-		for _, scene := range allScenes.Interactions {
-			sceneURL, _ := url.Parse(scene.Request.URI)
-			if req.Method == scene.Request.Method && req.URL.Path == sceneURL.Path &&
-				headersMatch(scene.Request.Headers, req.Header) {
+	m.Any("/**", handleAny)
 
-				log.Printf("Matched method %s", scene.Request.Method)
-				log.Printf("Matched URI %s", sceneURL.Path)
-				log.Printf("Matched headers %s", scene.Request.Headers)
-
-				if queriesMatch(req.URL.RawQuery, sceneURL.RawQuery) {
-					log.Printf("Matched query params %s\n", sceneURL.RawQuery)
-					return scene.Response.Status.Code, scene.Response.Body
-
-				} else if bodiesMatch(scene.Request.Body, req.Body) {
-					log.Printf("Request body matched expected.")
-					return scene.Response.Status.Code, scene.Response.Body
-				}
-			}
-		}
-
-		// TODO(pablo): Not using a scene's provided response header... yet.
-
-		return 501, "ERROR: Your request did not match any scenes."
-	})
 	log.Printf("===>>> Poser %s listening on %s <<<===", version, *port)
-	log.Fatal(http.ListenAndServe(*port, m))
+	log.Fatal(http.ListenAndServe(":"+*port, m))
 }
