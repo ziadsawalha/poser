@@ -8,7 +8,7 @@
 
 FROM scratch
 
-ADD bin/linux/poser /poser
+ADD bin/poser /poser
 ADD public /public
 
 ENTRYPOINT ["/poser"]
