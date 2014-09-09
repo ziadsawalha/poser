@@ -18,12 +18,14 @@ Poser is written in Go so it's pretty snappy. And the Docker container is tiny (
     * run `go get github.com/pablosan/poser`
     * Then run `$GOPATH/bin/poser -scenes path/to/your/hello.yaml -port <some_legal_port>`
   * Build from source:
-    * `git clone git@github.com:pablosan/poser.git`
-    * `cd poser`
-    * `go install`
-    * `$GOPATH/bin/poser -scenes path/to/your/hello.yaml -port <some_legal_port>`
+    ```
+    git clone git@github.com:pablosan/poser.git
+    cd poser
+    go install
+    $GOPATH/bin/poser -scenes path/to/your/hello.yaml -port <some_legal_port>
+    ```
   * Using Docker
-    * `docker run -d -p 8080:3000 -v /path/to/your/hello.yaml:/var/scenes.json --name poser pablosan/poser -scene /var/scenes.json`
+    `docker run -d -p 8080:3000 -v /path/to/your/hello.yaml:/var/scenes.json --name poser pablosan/poser -scene /var/scenes.json`
 
   Then make a call to poser:
 
@@ -39,3 +41,22 @@ Poser is written in Go so it's pretty snappy. And the Docker container is tiny (
     ```
 
 If you're wondering what goes in the scenes file, check out the [examples](examples).
+
+### Building the Docker container
+
+Building the final Docker container is a two step process. The first `docker build` is done from within the `linux-bin` directory. This build relies on the google/golang container and statically compiles the `poser` binary.
+
+Once the binary is built, the second `docker build` command is done from within the project's root directory. This is where the magic happens: using a scratch image means this Docker image starts at a size of zero bytes. Because we statically compiled the binary there are no dependencies. So we can simply add the binary and one other static file (favicon.ico) to the image. This is how `poser` keeps its svelte figure.
+
+Because of this process, __building the Docker image must occur on a Docker or CoreOS host OS__ (you cannot run this from the Mac OS command line, e.g. using boot2docker).
+
+Once you are on your Docker/CoreOS machine (i.e. ssh'ed into a Docker or CoreOS instance), from the project's root directory:
+
+    ```
+    cd linux-bin
+    ./build.sh
+    cd ..
+    docker build --rm=true --no-cache=true -t pablosan/poser .
+    ```
+
+Now you can launch the Docker container without performing a `docker pull`.
