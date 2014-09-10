@@ -1,5 +1,5 @@
 version: 1
-interactions:
+scenes:
 - request:
     method: GET
     uri: https://somedomain.com:443/hello

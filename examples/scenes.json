@@ -1,6 +1,7 @@
 {
   "version": 1,
-  "interactions": [
+  "base_url": "http://some.url.com",
+  "scenes": [
     {
       "request": {
         "body": "{\"auth\": {\"domain\": {\"name\": \"somedomain\"}, \"rsaCredentials\": {\"username\": \"pablo\", \"tokenKey\": \"1234567890\"}}}",

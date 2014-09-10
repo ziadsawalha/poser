@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"net/http"
 
@@ -9,23 +8,26 @@ import (
 )
 
 var version = "v0.0.1"   // Poser version
-var allScenes = scenes{} // All scene definitions (from scenes.go)
 
 func main() {
-	// Command line arguments setup
-	var scenesFilename = flag.String("scenes", "scenes.json",
-		"Path to json or yaml file defining request/response pairs.")
-	var port = flag.String("port", "3000",
-		"Port the http server should listen on. Defaults to 3000.")
+	parseFlags()
 
-	flag.Parse()
-	parseScenes(*scenesFilename)
-
-	// Crank up Poser
+	// Configure Poser
 	m := martini.Classic()
 
 	m.Any("/**", handleAny)
 
-	log.Printf("===>>> Poser %s listening on %s <<<===", version, *port)
-	log.Fatal(http.ListenAndServe(":"+*port, m))
+	// Output version, port, and enabled modes information
+	log.Printf("===>>> Poser %s listening on %s", version, port)
+
+	if recordMode {
+		log.Printf("--->>> Poser's record/proxy mode is enabled for %s", allScenes.BaseURL)
+	}
+
+	if playMode {
+		log.Printf("--->>> Poser's playback mode is enabled")
+	}
+
+	// Crank up Poser
+	log.Fatal(http.ListenAndServe(":"+port, m))
 }

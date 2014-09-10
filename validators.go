@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"log"
@@ -75,4 +76,28 @@ func bodiesMatch(expected string, actual io.ReadCloser) bool {
 	json.Unmarshal([]byte(expected), &expectedJSON)
 	json.Unmarshal([]byte(actualBody), &actualJSON)
 	return reflect.DeepEqual(expectedJSON, actualJSON)
+}
+
+func matchScene(res http.ResponseWriter, req *http.Request) (match response, err error) {
+	for _, scene := range allScenes.Scenes {
+		sceneURL, _ := url.Parse(scene.Request.URI)
+		if req.Method == scene.Request.Method && req.URL.Path == sceneURL.Path &&
+			headersMatch(scene.Request.Headers, req.Header) {
+
+			log.Printf("Matched method %s", scene.Request.Method)
+			log.Printf("Matched URI %s", sceneURL.Path)
+			log.Printf("Matched headers %s", scene.Request.Headers)
+
+			if queriesMatch(req.URL.RawQuery, sceneURL.RawQuery) {
+				log.Printf("Matched query params %s\n", sceneURL.RawQuery)
+				return scene.Response, err
+
+			} else if bodiesMatch(scene.Request.Body, req.Body) {
+				log.Println("Request body matched expected.")
+				return scene.Response, err
+			}
+		}
+	}
+	log.Println("No scene was found that matched the request")
+	return match, errors.New("matchScene: no scene matched request")
 }

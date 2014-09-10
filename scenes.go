@@ -9,6 +9,8 @@ import (
 	"gopkg.in/yaml.v1"
 )
 
+var allScenes = scenes{} // All scene definitions (from scenes.go)
+
 type status struct {
 	Message string
 	Code    int `json:",float64"`
@@ -33,8 +35,9 @@ type scene struct {
 }
 
 type scenes struct {
-	Version      float64
-	Interactions []scene
+	Version float64
+	BaseURL string `json:"base_url"`
+	Scenes  []scene
 }
 
 func parseScenes(scenesFilename string) {

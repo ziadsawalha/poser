@@ -3,33 +3,30 @@ package main
 import (
 	"log"
 	"net/http"
-	"net/url"
 )
 
 func handleAny(res http.ResponseWriter, req *http.Request) {
-	for _, scene := range allScenes.Interactions {
-		sceneURL, _ := url.Parse(scene.Request.URI)
-		if req.Method == scene.Request.Method && req.URL.Path == sceneURL.Path &&
-			headersMatch(scene.Request.Headers, req.Header) {
+	if playMode {
+		log.Println("Entering Play Mode...")
+		match, err := matchScene(res, req)
 
-			log.Printf("Matched method %s", scene.Request.Method)
-			log.Printf("Matched URI %s", sceneURL.Path)
-			log.Printf("Matched headers %s", scene.Request.Headers)
-
-			if queriesMatch(req.URL.RawQuery, sceneURL.RawQuery) {
-				log.Printf("Matched query params %s\n", sceneURL.RawQuery)
-				writeResponse(res, scene.Response.Headers, scene.Response.Status.Code,
-					scene.Response.Body)
-				return
-
-			} else if bodiesMatch(scene.Request.Body, req.Body) {
-				log.Printf("Request body matched expected.")
-				writeResponse(res, scene.Response.Headers, scene.Response.Status.Code,
-					scene.Response.Body)
-				return
-			}
+		if err == nil {
+			writeResponse(res, match)
+			return
+		} else if !recordMode {
+			res.WriteHeader(501)
+			res.Write([]byte("ERROR: request did not match any scenes"))
+			return
 		}
 	}
-	res.WriteHeader(501)
-	res.Write([]byte("ERROR: request did not match any scenes."))
+
+	// If we've made it this far, we're in record mode and need to proxy/record
+	log.Println("Entering Record Mode...")
+	var tempResponse response
+	tempResponse.Body = "Coming soon..."
+	tempResponse.Status.Code = 200
+	headers := make(map[string][]string)
+	headers["Content-Type"] = []string{"application/json"}
+	tempResponse.Headers = headers
+	writeResponse(res, tempResponse)
 }

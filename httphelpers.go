@@ -8,8 +8,8 @@ func addResponseHeaders(res http.ResponseWriter, headers map[string][]string) {
 	}
 }
 
-func writeResponse(res http.ResponseWriter, headers map[string][]string, status int, body string) {
-	addResponseHeaders(res, headers)
-	res.WriteHeader(status)
-	res.Write([]byte(body))
+func writeResponse(res http.ResponseWriter, response response) {
+	addResponseHeaders(res, response.Headers)
+	res.WriteHeader(response.Status.Code)
+	res.Write([]byte(response.Body))
 }
