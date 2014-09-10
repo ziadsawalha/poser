@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "base_url": "http://some.url.com",
+  "baseurl": "http://some.url.com",
   "scenes": [
     {
       "request": {
