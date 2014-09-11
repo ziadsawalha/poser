@@ -2,8 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
+	"net/http"
+	"net/url"
 	"strings"
 
 	"gopkg.in/yaml.v1"
@@ -42,6 +45,7 @@ type scenes struct {
 
 func parseScenes(scenesFilename string) {
 	file, _ := ioutil.ReadFile(scenesFilename)
+
 	var err error
 
 	if strings.HasSuffix(scenesFilename, ".json") {
@@ -49,12 +53,34 @@ func parseScenes(scenesFilename string) {
 	} else if strings.HasSuffix(scenesFilename, ".yaml") {
 		err = yaml.Unmarshal(file, &allScenes)
 	} else {
-		log.Printf("ERROR: %s does not end in '.json' or '.yaml'.", scenesFilename)
-		log.Fatal(1)
+		log.Fatal("Scenes file must end in either \".json\" or \".yaml\"")
 	}
 
-	if err != nil {
-		log.Printf("ERROR: %s is not a valid scenes file.", scenesFilename)
-		log.Fatal(err)
+	if err != nil && playMode {
+		log.Fatal("A valid scenes file is required (" + scenesFilename + " is not valid)")
 	}
+}
+
+func matchScene(res http.ResponseWriter, req *http.Request) (match response, err error) {
+	for _, scene := range allScenes.Scenes {
+		sceneURL, _ := url.Parse(scene.Request.URI)
+		if req.Method == scene.Request.Method && req.URL.Path == sceneURL.Path &&
+			headersMatch(scene.Request.Headers, req.Header) {
+
+			log.Printf("Matched method %s", scene.Request.Method)
+			log.Printf("Matched URI %s", sceneURL.Path)
+			log.Printf("Matched headers %s", scene.Request.Headers)
+
+			if queriesMatch(req.URL.RawQuery, sceneURL.RawQuery) {
+				log.Printf("Matched query params %s\n", sceneURL.RawQuery)
+				return scene.Response, err
+
+			} else if bodiesMatch(scene.Request.Body, req.Body) {
+				log.Println("Request body matched expected.")
+				return scene.Response, err
+			}
+		}
+	}
+	log.Println("No scene was found that matched the request")
+	return match, errors.New("matchScene: no scene matched request")
 }

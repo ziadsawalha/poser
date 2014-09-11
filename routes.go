@@ -1,8 +1,10 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 )
 
 func handleAny(res http.ResponseWriter, req *http.Request) {
@@ -22,11 +24,43 @@ func handleAny(res http.ResponseWriter, req *http.Request) {
 
 	// If we've made it this far, we're in record mode and need to proxy/record
 	log.Println("Entering Record Mode...")
-	var tempResponse response
-	tempResponse.Body = "Coming soon..."
-	tempResponse.Status.Code = 200
-	headers := make(map[string][]string)
-	headers["Content-Type"] = []string{"application/json"}
-	tempResponse.Headers = headers
-	writeResponse(res, tempResponse)
+
+	proxyURL, _ := url.Parse(allScenes.BaseURL)
+	req.RequestURI = ""
+	req.URL.Scheme = proxyURL.Scheme
+	req.URL.Host = proxyURL.Host
+	req.Host = proxyURL.Host
+
+	client := &http.Client{}
+	proxyRes, err := client.Do(req)
+
+	if err != nil {
+		res.WriteHeader(501)
+		res.Write([]byte("Proxy call failed: " + err.Error()))
+	}
+
+	addResponseHeaders(res, proxyRes.Header)
+	res.WriteHeader(proxyRes.StatusCode)
+	respBody, _ := ioutil.ReadAll(proxyRes.Body)
+	res.Write(respBody)
+
+	reqBody, _ := ioutil.ReadAll(req.Body)
+
+	newScene := scene{
+		Request: request{
+			URI:     "",
+			Method:  req.Method,
+			Headers: req.Header,
+			Body:    string(reqBody[:]),
+		},
+		Response: response{
+			Headers: proxyRes.Header,
+			Status: status{
+				Message: "",
+				Code:    proxyRes.StatusCode,
+			},
+			Body: string(respBody[:]),
+		},
+	}
+	log.Println(newScene)
 }

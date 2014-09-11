@@ -13,7 +13,7 @@ var scenesFile string // The json/yaml file containing all scenes
 
 func parseConfig() {
 	flag.StringVar(&scenesFile, "scenes", "scenes.json",
-		"Path to json/yaml scenes file. Default is 'scenes.json'")
+		"Path to json/yaml scenes file. Default is \"\"")
 	flag.StringVar(&port, "port", "3000", "HTTP port. Defaults to 3000")
 	flag.BoolVar(&playMode, "play", false, "Enable play mode. Default is `true`")
 	flag.BoolVar(&recordMode, "record", false, "Enable record mode. Default is `false`")
@@ -24,8 +24,9 @@ func parseConfig() {
 	parseScenes(scenesFile)
 
 	if proxy != "" {
-		// Command line takes precedence: overwrite BaseURL
+		// Command line takes precedence: overwrite BaseURL and Version
 		allScenes.BaseURL = proxy
+		allScenes.Version = 1
 	}
 
 	if recordMode && allScenes.BaseURL == "" {
