@@ -18,13 +18,16 @@ Poser is written in Go so it's pretty snappy. And the Docker container is tiny (
     * run `go get github.com/pablosan/poser`
     * Then run `$GOPATH/bin/poser -scenes path/to/your/hello.yaml -port <some_legal_port>`
   * Build from source:
+
     ```
     git clone git@github.com:pablosan/poser.git
     cd poser
     go install
     $GOPATH/bin/poser -scenes path/to/your/hello.yaml -port <some_legal_port>
     ```
+
   * Using Docker
+
     `docker run -d -p 8080:3000 -v /path/to/your/hello.yaml:/var/scenes.json --name poser pablosan/poser -scene /var/scenes.json`
 
   Then make a call to poser:
@@ -52,11 +55,11 @@ Because of this process, __building the Docker image must occur on a Docker or C
 
 Once you are on your Docker/CoreOS machine (i.e. ssh'ed into a Docker or CoreOS instance), from the project's root directory:
 
-    ```
-    cd linux-bin
-    ./build.sh
-    cd ..
-    docker build --rm=true --no-cache=true -t pablosan/poser .
-    ```
+  ```shell
+  cd linux-bin
+  ./build.sh
+  cd ..
+  docker build --rm=true --no-cache=true -t pablosan/poser .
+  ```
 
 Now you can launch the Docker container without performing a `docker pull`.
