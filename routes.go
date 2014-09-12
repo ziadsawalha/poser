@@ -1,10 +1,16 @@
 package main
 
 import (
+	"encoding/json"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
+	"strings"
+
+	"gopkg.in/yaml.v1"
 )
 
 func handleAny(res http.ResponseWriter, req *http.Request) {
@@ -48,7 +54,7 @@ func handleAny(res http.ResponseWriter, req *http.Request) {
 
 	newScene := scene{
 		Request: request{
-			URI:     "",
+			URI:     allScenes.BaseURL + req.URL.RequestURI(),
 			Method:  req.Method,
 			Headers: req.Header,
 			Body:    string(reqBody[:]),
@@ -56,11 +62,33 @@ func handleAny(res http.ResponseWriter, req *http.Request) {
 		Response: response{
 			Headers: proxyRes.Header,
 			Status: status{
-				Message: "",
+				Message: proxyRes.Status,
 				Code:    proxyRes.StatusCode,
 			},
 			Body: string(respBody[:]),
 		},
 	}
-	log.Println(newScene)
+
+	addScene(newScene)
+	var encErr error
+	var encoded []byte
+	if strings.HasSuffix(scenesFile, ".json") {
+		encoded, encErr = json.MarshalIndent(allScenes, "", "  ")
+	} else {
+		encoded, encErr = yaml.Marshal(allScenes)
+	}
+	if encErr != nil {
+		log.Printf("JSON Encoding failed: %s", encErr.Error())
+	}
+
+	file, openErr := os.OpenFile(scenesFile, os.O_TRUNC|os.O_RDWR|os.O_CREATE, 0666)
+	if openErr != nil {
+		log.Printf("Open file failed: %s", openErr.Error())
+	}
+	_, writeErr := io.WriteString(file, string(encoded))
+	if writeErr != nil {
+		log.Printf("Append to file failed: %s", writeErr.Error())
+	}
+
+	file.Close()
 }

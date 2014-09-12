@@ -84,3 +84,14 @@ func matchScene(res http.ResponseWriter, req *http.Request) (match response, err
 	log.Println("No scene was found that matched the request")
 	return match, errors.New("matchScene: no scene matched request")
 }
+
+func addScene(newScene scene) {
+	n := len(allScenes.Scenes)
+	if n == cap(allScenes.Scenes) {
+		newScenes := make([]scene, len(allScenes.Scenes), 2*len(allScenes.Scenes)+1)
+		copy(newScenes, allScenes.Scenes)
+		allScenes.Scenes = newScenes
+	}
+	allScenes.Scenes = allScenes.Scenes[0 : n+1]
+	allScenes.Scenes[n] = newScene
+}
