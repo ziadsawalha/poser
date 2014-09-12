@@ -9,7 +9,7 @@ While scratching that particular itch, I also realized this could fit another us
 
 So Poser aims to provide a small, fast, canned request/response web server that can be used either to eliminate external dependencies for reliable/fast testing or to quickly mock up a web API to test new ideas.
 
-Poser is written in Go so it's pretty snappy. And the Docker container is tiny (~5.2 Megabytes)! This means pulling the image only takes a few seconds and spinning up a new container takes milliseconds.
+Poser is written in Go so it's pretty snappy. And the Docker container is tiny (~5.3 Megabytes)! This means pulling the image only takes a few seconds and spinning up a new container takes milliseconds.
 
 ### Installing Poser
 
