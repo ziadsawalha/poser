@@ -19,7 +19,7 @@ Poser is written in Go so it's pretty snappy. And the Docker container is tiny (
     * Then run `$GOPATH/bin/poser -scenes path/to/your/hello.yaml -port <some_legal_port>`
   * Build from source:
 
-    ```
+    ```shell
     git clone git@github.com:pablosan/poser.git
     cd poser
     go install
@@ -32,7 +32,7 @@ Poser is written in Go so it's pretty snappy. And the Docker container is tiny (
 
   Then make a call to poser:
 
-    ```
+    ```shell
     $ curl http://localhost:3000/hello -i
     host:3000/hello -i
     HTTP/1.1 200 OK
@@ -63,3 +63,15 @@ Once you are on your Docker/CoreOS machine (i.e. ssh'ed into a Docker or CoreOS 
   ```
 
 Now you can launch the Docker container without performing a `docker pull`.
+
+### Using Poser
+
+__Command Line Arguments:__
+
+  * `-scenes <path/to/scenes.(json|yaml)>` (Optional): Specifies the scenes file poser should use for read/write. Defaults to `scenes.json`.
+  * `-port <some-legal-port>` (Optional): Specifies the HTTP port that should be used. Defaults to `3000`.
+  * `-play[=false]` (Optional*): Enable playback mode. This mode requires at least one valid scene to be present in the scenes file. Defaults to `false`.
+  * `-record[=false] (Optional*)`: Enable record/provy mode. This mode requires either `baseurl` to be defined at the root of the scenes document, or the `-proxy` parameter. Poser will proxy any requests to the proxy url provided, proxy the response back to the client, and write a new scene to the scenes file. Defaults to `false`.
+  * `-proxy <http://some.valid.url.com[:<some-valid-port>]>` (Optional): Specifies the URL to which requests should be proxied. Only applies to `-record` mode. Defaults to "".
+
+_*NOTE: At least one of `-play` or `-record` are required. If both are specified, poser will give precedence to `-play`: i.e. it will only proxy the request when no matching pre-recorded scene is found._
